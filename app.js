@@ -1,13 +1,23 @@
-const Koa = require('koa');
+const Koa = require("koa");
+const { createServer } = require("http");
+const { Server } = require("socket.io");
 const {koaBody} = require('koa-body');
+let items = require('./items.js');
+
 
 const app = new Koa();
 
-// middleware
+
+const httpServer = createServer(app.callback());
+const io = new Server(httpServer, { /* options */ });
 app.use(koaBody());
+app.use(items.routes());
 
-// Require the routers
+io.on("connection", (socket) => {
+    console.log(socket.id)
+    socket.join('plaza')
+    socket.emit('greeting',{text:"hello "+socket.id})
+    // ...
+});
 
-// use the routes
-
-app.listen(3000);
+httpServer.listen(3200);
